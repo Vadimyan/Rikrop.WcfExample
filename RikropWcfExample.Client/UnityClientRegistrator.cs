@@ -2,9 +2,12 @@
 using System.Reflection;
 using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.Practices.Unity;
+using Rikrop.Core.Framework.Logging;
 using Rikrop.Core.Framework.Unity.Factories;
+using Rikrop.Core.Logging.NLog;
 using Rikrop.Core.Wcf.Unity.ClientRegistration;
 using RikropWcfExample.Client.Presentation;
+using RikropWcfExample.Server.Contracts;
 
 namespace RikropWcfExample.Client
 {
@@ -17,17 +20,26 @@ namespace RikropWcfExample.Client
 
             container
                 .RegisterWcf(ip, port)
-                .RegisterFactories();
+                .RegisterFactories()
+                .RegisterLogger();
         }
 
         private static IUnityContainer RegisterWcf(this IUnityContainer container, string serviceIp, int servicePort)
         {
             container
+                .RegisterType<ClientSession>(new ContainerControlledLifetimeManager())
                 .RegisterClientWcf(o => o.RegisterServiceExecutor(reg => reg.Standard()
                                                          .WithExceptionConverters()
                                                          .AddFaultToBusinessConverter())
                 .RegisterChannelWrapperFactory(reg => reg.Standard())
-                .RegisterServiceConnection(reg => reg.NetTcp(serviceIp, servicePort)));
+                .RegisterServiceConnection(reg => reg.NetTcp(serviceIp, servicePort)
+                                                     .WithBehaviors()
+                                                     .AddSessionBehavior(sReg => sReg.WithStandardSessionHeaderInfo("ExampleNamespace", "SessionId")
+                                                                                     .WithCustomSessionIdResolver<ClientSession>(new ContainerControlledLifetimeManager())
+                                                                                     .WithStandardMessageInspectorFactory<ILoginService>(service => service.Login())
+                                                                        )
+                                          )
+                                  );
 
             
 
@@ -40,6 +52,14 @@ namespace RikropWcfExample.Client
                 .SelectMany(assembly => assembly.DefinedTypes.Where(type => type.Name == "ICtor"))
                 .Where(type => !container.IsRegistered(type))
                 .ForEach(container.RegisterFactory);
+
+            return container;
+        }
+
+        private static IUnityContainer RegisterLogger(this IUnityContainer container)
+        {
+            container.RegisterType<ILogger>(new ContainerControlledLifetimeManager(),
+                                            new InjectionFactory(f => NLogger.CreateConsoleTarget()));
 
             return container;
         }

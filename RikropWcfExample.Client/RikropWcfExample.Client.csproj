@@ -44,12 +44,22 @@
     <Reference Include="Microsoft.Practices.Unity.RegistrationByConvention">
       <HintPath>..\packages\Unity.3.5.1404.0\lib\net45\Microsoft.Practices.Unity.RegistrationByConvention.dll</HintPath>
     </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="Rikrop.Core.Exceptions">
+      <HintPath>..\packages\Rikrop.Core.Exceptions.1.0.2.0\lib\net45\Rikrop.Core.Exceptions.dll</HintPath>
+    </Reference>
     <Reference Include="Rikrop.Core.Framework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Rikrop.Core.Framework.1.0.2.1\lib\net45\Rikrop.Core.Framework.dll</HintPath>
     </Reference>
     <Reference Include="Rikrop.Core.Framework.Unity">
       <HintPath>..\packages\Rikrop.Core.Framework.Unity.1.0.2.0\lib\net45\Rikrop.Core.Framework.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Rikrop.Core.Logging.NLog, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rikrop.Core.Logging.NLog.1.0.2.2\lib\net45\Rikrop.Core.Logging.NLog.dll</HintPath>
     </Reference>
     <Reference Include="Rikrop.Core.Wcf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -81,6 +91,10 @@
     <ProjectReference Include="..\RikropWcfExample.Client.Presentation\RikropWcfExample.Client.Presentation.csproj">
       <Project>{D557D826-1EA0-4BE8-B69B-149A72DEE15E}</Project>
       <Name>RikropWcfExample.Client.Presentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RikropWcfExample.Server.Contracts\RikropWcfExample.Server.Contracts.csproj">
+      <Project>{7e95b7b7-cd83-4afd-a156-2fb4a27e70d3}</Project>
+      <Name>RikropWcfExample.Server.Contracts</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

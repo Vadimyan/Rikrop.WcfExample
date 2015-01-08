@@ -1,13 +1,14 @@
-﻿using System;
-using Microsoft.Practices.ObjectBuilder2;
+﻿using Microsoft.Practices.ObjectBuilder2;
 using Microsoft.Practices.Unity;
 using Rikrop.Core.Framework.Logging;
 using Rikrop.Core.Framework.Unity.Factories;
 using Rikrop.Core.Logging.NLog;
+using Rikrop.Core.Wcf.Security.Server;
 using Rikrop.Core.Wcf.Unity.ServerRegistration;
 using RikropWcfExample.Server.BL;
 using System.Linq;
 using System.Reflection;
+using RikropWcfExample.Server.Contracts;
 
 namespace RikropWcfExample.Server
 {
@@ -21,18 +22,28 @@ namespace RikropWcfExample.Server
             container
                 .RegisterWcfHosting(ip, port)
                 .RegisterFactories()
-                .RegisterLogger("RikropWcfExample");
+                .RegisterLogger();
         }
 
         private static IUnityContainer RegisterWcfHosting(this IUnityContainer container, string serviceIp, int servicePort)
         {
             container
+                .RegisterType<ISessionResolver<Session>, SessionResolver<Session>>()
                 .RegisterServerWcf(
                     o => o.RegisterServiceConnection(reg => reg.NetTcp(serviceIp, servicePort))
                           .RegisterServiceHostFactory(reg => reg.WithBehaviors()
                                                                 .AddErrorHandlersBehavior(eReg => eReg.AddBusinessErrorHandler().AddLoggingErrorHandler(NLogger.CreateEventLogTarget()))
-                                                                .AddDependencyInjectionBehavior())
-                          );
+                                                                .AddDependencyInjectionBehavior()
+                                                                .AddServiceAuthorizationBehavior(sReg => sReg.WithStandardAuthorizationManager()
+                                                                                           .WithStandardSessionHeaderInfo("ExampleNamespace", "SessionId")
+                                                                                           .WithOperationContextSessionIdInitializer()
+                                                                                           .WithSessionAuthStrategy<Session>()
+                                                                                           .WithLoginMethod<ILoginService>(s => s.Login())
+                                                                                           .WithOperationContextSessionIdResolver()
+                                                                                           .WithInMemorySessionRepository()
+                                                                                           .WithStandardSessionCopier())
+                                                     )
+                                  );
 
             return container;
         }
@@ -47,20 +58,10 @@ namespace RikropWcfExample.Server
             return container;
         }
 
-        private static IUnityContainer RegisterLogger(this IUnityContainer container, string logerName)
+        private static IUnityContainer RegisterLogger(this IUnityContainer container)
         {
             container.RegisterType<ILogger>(new ContainerControlledLifetimeManager(),
-                new InjectionFactory(f =>
-                {
-                    try
-                    {
-                        return NLogger.CreateEventLogTarget(source: "Server", logName: logerName);
-                    }
-                    catch (Exception)
-                    {
-                        return NLogger.CreateEventLogTarget();
-                    }
-                }));
+                                            new InjectionFactory(f => NLogger.CreateConsoleTarget()));
 
             return container;
         }
