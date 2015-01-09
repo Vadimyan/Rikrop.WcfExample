@@ -41,8 +41,6 @@ namespace RikropWcfExample.Client
                                           )
                                   );
 
-            
-
             return container;
         }
 
